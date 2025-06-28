@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jelly Belly World - Explore the Flavors!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" xintegrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4ff; /* Light blue-ish background */
+        }
+        h1, h2, h3, .nav-item {
+            font-family: 'Fredoka One', cursive;
+        }
+        .jelly-bean-card {
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            
+        }
+        .jelly-bean-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .nav-item {
+            position: relative;
+            transition: color 0.3s;
+        }
+        .nav-item::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 3px;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #ff6b6b; /* A fun accent color */
+            transition: width 0.3s;
+        }
+        .nav-item:hover::after, .nav-item.active::after {
+            width: 100%;
+        }
+        
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 100; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.5); /* Black w/ opacity */
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 2rem;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 1rem;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: slide-down 0.5s ease-out;
+        }
+
+        @keyframes slide-down {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .close-button {
+            color: #aaa;
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+        }
+
+        .loader {
+            border: 8px solid #f3f3f3; /* Light grey */
+            border-top: 8px solid #ff6b6b; /* Accent color */
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Fun background with floating jelly beans */
+        body::before {
+            content: ' ';
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            background: linear-gradient(45deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
+            opacity: 0.2;
+        }
+
+        .hero-section {
+            background-image: url('https://placehold.co/1200x600/ff6b6b/ffffff?text=Welcome+to+Jelly+Belly+World!&font=fredoka-one');
+            background-size: cover;
+            background-position: center;
+        }
+
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <!-- Header & Navigation -->
+    <header class="bg-white/80 backdrop-blur-md shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-3xl text-pink-500 font-bold tracking-wider">
+                <a href="#" onclick="showView('home')">Jelly Belly World</a>
+            </h1>
+            <ul class="flex space-x-8 text-lg">
+                <li><a href="#" class="nav-item active" data-view="home" onclick="switchView(event)">Home</a></li>
+                <li><a href="#" class="nav-item" data-view="beans" onclick="switchView(event)">Bean-cyclopedia</a></li>
+                <li><a href="#" class="nav-item" data-view="recipes" onclick="switchView(event)">Recipes</a></li>
+                <li><a href="#" class="nav-item" data-view="combinations" onclick="switchView(event)">Flavor Combos</a></li>
+                <li><a href="#" class="nav-item" data-view="history" onclick="switchView(event)">History</a></li>
+                <li><a href="#" class="nav-item" data-view="facts" onclick="switchView(event)">Fun Facts</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-6">
+        <!-- Views -->
+        <div id="home-view">
+            <!-- Hero Section -->
+            <section class="hero-section text-white rounded-2xl p-12 md:p-24 text-center flex flex-col items-center justify-center mb-12">
+                <h2 class="text-5xl md:text-7xl font-bold mb-4 drop-shadow-lg">Discover a World of Flavor</h2>
+                <p class="text-xl md:text-2xl mb-8 max-w-3xl drop-shadow-md">Your ultimate guide to the colorful, delicious universe of Jelly Belly jelly beans. Explore flavors, recipes, fun facts, and more!</p>
+                <div class="w-full max-w-lg">
+                    <div class="relative">
+                        <input type="text" id="main-search" placeholder="Search for a flavor like 'Buttered Popcorn'..." class="w-full py-4 px-6 rounded-full text-gray-800 focus:outline-none focus:ring-4 focus:ring-pink-300 transition-all">
+                        <button onclick="performSearch()" class="absolute right-2 top-1/2 -translate-y-1/2 bg-pink-500 hover:bg-pink-600 text-white rounded-full px-6 py-2.5 font-semibold transition-colors">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Featured Content -->
+            <section>
+                <h3 class="text-4xl text-center mb-8 text-gray-800">Featured Fun</h3>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <!-- Featured Bean -->
+                    <div class="bg-white p-6 rounded-2xl shadow-lg text-center jelly-bean-card cursor-pointer" onclick="showRandomDetail('beans')">
+                        <h4 class="text-2xl mb-2 text-purple-600">Random Bean!</h4>
+                        <p class="text-gray-600">Click to discover a random Jelly Belly bean. What flavor will you get?</p>
+                        <i class="fas fa-random text-4xl mt-4 text-purple-400"></i>
+                    </div>
+                    <!-- Featured Recipe -->
+                    <div class="bg-white p-6 rounded-2xl shadow-lg text-center jelly-bean-card cursor-pointer" onclick="showRandomDetail('recipes')">
+                        <h4 class="text-2xl mb-2 text-green-600">Random Recipe!</h4>
+                        <p class="text-gray-600">Feeling adventurous? Get a random recipe and create something delicious.</p>
+                         <i class="fas fa-utensils text-4xl mt-4 text-green-400"></i>
+                    </div>
+                    <!-- Featured Fact -->
+                    <div class="bg-white p-6 rounded-2xl shadow-lg text-center jelly-bean-card cursor-pointer" onclick="showRandomDetail('facts')">
+                        <h4 class="text-2xl mb-2 text-yellow-600">Random Fact!</h4>
+                        <p class="text-gray-600">Impress your friends with a surprising fact about Jelly Belly.</p>
+                        <i class="fas fa-lightbulb text-4xl mt-4 text-yellow-400"></i>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div id="beans-view" class="hidden">
+             <h2 class="text-4xl text-center mb-8 text-gray-800">Bean-cyclopedia</h2>
+             <!-- Filters -->
+             <div class="bg-white p-4 rounded-lg shadow-md mb-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                <input type="text" id="bean-flavor-search" placeholder="Flavor Name" class="p-2 border rounded">
+                <input type="text" id="bean-color-search" placeholder="Color Group" class="p-2 border rounded">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Dietary</label>
+                    <div class="flex space-x-4 mt-1">
+                       <label class="flex items-center"><input type="checkbox" id="glutenFree" class="mr-1"> Gluten-Free</label>
+                       <label class="flex items-center"><input type="checkbox" id="sugarFree" class="mr-1"> Sugar-Free</label>
+                       <label class="flex items-center"><input type="checkbox" id="kosher" class="mr-1"> Kosher</label>
+                    </div>
+                </div>
+                <button onclick="applyBeanFilters()" class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition">Apply Filters</button>
+            </div>
+            <div id="beans-content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+            <div id="beans-pagination" class="mt-8 text-center"></div>
+        </div>
+
+        <div id="recipes-view" class="hidden">
+            <h2 class="text-4xl text-center mb-8 text-gray-800">Delicious Recipes</h2>
+            <div class="w-full max-w-md mx-auto mb-8">
+                <div class="relative">
+                    <input type="text" id="recipe-search" placeholder="Search for a recipe..." class="w-full py-3 px-5 rounded-full text-gray-800 focus:outline-none focus:ring-4 focus:ring-green-300 transition-all">
+                    <button onclick="applyRecipeFilters()" class="absolute right-2 top-1/2 -translate-y-1/2 bg-green-500 hover:bg-green-600 text-white rounded-full px-5 py-2 font-semibold transition-colors">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="recipes-content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+            <div id="recipes-pagination" class="mt-8 text-center"></div>
+        </div>
+
+        <div id="combinations-view" class="hidden">
+            <h2 class="text-4xl text-center mb-8 text-gray-800">Flavor Combinations</h2>
+             <div class="w-full max-w-md mx-auto mb-8">
+                <div class="relative">
+                    <input type="text" id="combo-search" placeholder="Search for a combination name..." class="w-full py-3 px-5 rounded-full text-gray-800 focus:outline-none focus:ring-4 focus:ring-yellow-300 transition-all">
+                    <button onclick="applyCombinationFilters()" class="absolute right-2 top-1/2 -translate-y-1/2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-full px-5 py-2 font-semibold transition-colors">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="combinations-content" class="space-y-4"></div>
+            <div id="combinations-pagination" class="mt-8 text-center"></div>
+        </div>
+
+        <div id="history-view" class="hidden">
+            <h2 class="text-4xl text-center mb-8 text-gray-800">A Sweet History</h2>
+            <div id="history-content" class="relative border-l-4 border-pink-300 ml-6 space-y-12">
+                <!-- Milestones will be injected here -->
+            </div>
+             <div id="history-pagination" class="mt-8 text-center"></div>
+        </div>
+
+        <div id="facts-view" class="hidden">
+            <h2 class="text-4xl text-center mb-8 text-gray-800">Fun Jelly Belly Facts</h2>
+            <div id="facts-content" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+            <div id="facts-pagination" class="mt-8 text-center"></div>
+        </div>
+        
+        <div id="search-results-view" class="hidden">
+             <h2 class="text-4xl text-center mb-8 text-gray-800">Search Results</h2>
+             <div id="search-results-content"></div>
+        </div>
+
+        <div id="loader-view" class="hidden loader"></div>
+    </main>
+
+    <!-- Modal -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <footer class="bg-gray-800 text-white mt-12 py-8">
+        <div class="container mx-auto text-center">
+            <p>Jelly Belly World - A fan project using the Jelly Belly API.</p>
+            <p>Created with <i class="fas fa-heart text-red-500"></i> for educational purposes.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- API & State Management ---
+        const API_BASE_URL = 'https://jellybellywikiapi.onrender.com/api';
+        const state = {
+            currentView: 'home',
+            currentPage: {
+                beans: 1,
+                recipes: 1,
+                combinations: 1,
+                history: 1,
+                facts: 1,
+            },
+            pageSize: 12,
+        };
+
+        // --- Utility Functions ---
+        function showLoader() { document.getElementById('loader-view').style.display = 'block'; }
+        function hideLoader() { document.getElementById('loader-view').style.display = 'none'; }
+        
+        async function fetchData(endpoint, params = {}) {
+            const url = new URL(`${API_BASE_URL}/${endpoint}`);
+            Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+            
+            showLoader();
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error("Failed to fetch data:", error);
+                alert('Oops! Could not fetch data. Please try again later.');
+                return null;
+            } finally {
+                hideLoader();
+            }
+        }
+        
+        async function fetchById(endpoint, id) {
+            const url = `${API_BASE_URL}/${endpoint}/${id}`;
+            showLoader();
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error(`Failed to fetch ${endpoint} by ID:`, error);
+                alert('Oops! Could not fetch details. Please try again later.');
+                return null;
+            } finally {
+                hideLoader();
+            }
+        }
+
+        // --- View Switching Logic ---
+        function switchView(event) {
+            event.preventDefault();
+            const viewId = event.target.dataset.view;
+            showView(viewId);
+        }
+
+        function showView(viewId) {
+            // Hide all views
+            document.querySelectorAll('[id$="-view"]').forEach(view => view.classList.add('hidden'));
+            
+            // Show the target view
+            const targetView = document.getElementById(`${viewId}-view`);
+            if (targetView) {
+                targetView.classList.remove('hidden');
+            } else {
+                 document.getElementById('home-view').classList.remove('hidden');
+            }
+
+            // Update nav active state
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.view === viewId);
+            });
+            
+            state.currentView = viewId;
+
+            // Load content for the new view if it's empty
+            const contentDiv = document.getElementById(`${viewId}-content`);
+            if (contentDiv && !contentDiv.innerHTML.trim()) {
+                loadContentForView(viewId);
+            }
+        }
+        
+        // --- Content Loading ---
+        function loadContentForView(viewId, page = 1, filters = {}) {
+            state.currentPage[viewId] = page;
+            const params = { pageIndex: page, pageSize: state.pageSize, ...filters };
+            
+            switch (viewId) {
+                case 'beans':
+                    fetchData('beans', params).then(data => renderBeans(data));
+                    break;
+                case 'recipes':
+                    fetchData('recipes', params).then(data => renderRecipes(data));
+                    break;
+                case 'combinations':
+                    fetchData('combinations', params).then(data => renderCombinations(data));
+                    break;
+                case 'history':
+                     fetchData('mileStones', params).then(data => renderHistory(data));
+                    break;
+                case 'facts':
+                    fetchData('facts', params).then(data => renderFacts(data));
+                    break;
+            }
+        }
+        
+        // --- Rendering Functions ---
+
+        function renderBeans(data) {
+            const container = document.getElementById('beans-content');
+            if (!data || !data.items) {
+                container.innerHTML = `<p class="text-center col-span-full">No beans found!</p>`;
+                renderPagination('beans', null);
+                return;
+            }
+            container.innerHTML = data.items.map(bean => `
+                <div class="jelly-bean-card bg-white p-4 rounded-xl shadow-md flex flex-col items-center text-center cursor-pointer" onclick="showDetail('beans', ${bean.beanId})">
+                    <img src="${bean.imageUrl}" alt="${bean.flavorName}" class="w-24 h-24 object-contain mb-3" onerror="this.onerror=null;this.src='https://placehold.co/100x100/CCCCCC/FFFFFF?text=No+Image';">
+                    <h4 class="font-bold text-lg">${bean.flavorName}</h4>
+                    <div class="w-8 h-8 rounded-full mt-2 border-2 border-gray-200" style="background-color: ${bean.backgroundColor};"></div>
+                </div>
+            `).join('');
+            renderPagination('beans', data);
+        }
+
+        function renderRecipes(data) {
+            const container = document.getElementById('recipes-content');
+            if (!data || !data.items) {
+                 container.innerHTML = `<p class="text-center col-span-full">No recipes found!</p>`;
+                 renderPagination('recipes', null);
+                 return;
+            }
+            container.innerHTML = data.items.map(recipe => `
+                <div class="jelly-bean-card bg-white p-6 rounded-xl shadow-lg flex flex-col cursor-pointer" onclick="showDetail('recipes', ${recipe.recipeId})">
+                     <img src="${recipe.imageUrl}" alt="${recipe.name}" class="w-full h-48 object-cover rounded-lg mb-4" onerror="this.onerror=null;this.src='https://placehold.co/400x300/CCCCCC/FFFFFF?text=No+Image';">
+                     <h4 class="font-bold text-xl text-green-700 mb-2">${recipe.name}</h4>
+                     <p class="text-gray-600 text-sm flex-grow">${recipe.description.substring(0, 100)}...</p>
+                     <p class="text-sm text-gray-500 mt-2">Makes: ${recipe.makingAmount}</p>
+                </div>
+            `).join('');
+            renderPagination('recipes', data);
+        }
+
+        function renderCombinations(data) {
+            const container = document.getElementById('combinations-content');
+            if (!data || !data.items) {
+                container.innerHTML = `<p class="text-center">No combinations found!</p>`;
+                renderPagination('combinations', null);
+                return;
+            }
+            container.innerHTML = data.items.map(combo => `
+                <div class="jelly-bean-card bg-white p-6 rounded-xl shadow-lg cursor-pointer" onclick="showDetail('combinations', ${combo.combinationId})">
+                    <h4 class="font-bold text-2xl text-yellow-800 mb-2">${combo.name}</h4>
+                    <div class="flex space-x-2 items-center">
+                        <p class="font-semibold">Combine:</p>
+                        <div class="flex flex-wrap gap-2">
+                        ${combo.tag.map(tag => `<span class="bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            renderPagination('combinations', data);
+        }
+
+        function renderHistory(data) {
+            const container = document.getElementById('history-content');
+             if (!data || !data.items) {
+                container.innerHTML = `<p class="text-center">No milestones found!</p>`;
+                renderPagination('history', null);
+                return;
+            }
+            // Sort by year just in case API doesn't
+            const sortedMilestones = data.items.sort((a, b) => a.year - b.year);
+            container.innerHTML = sortedMilestones.map(milestone => `
+                <div class="relative">
+                    <div class="absolute w-6 h-6 bg-pink-500 rounded-full -left-9 mt-1.5 border-4 border-white"></div>
+                    <div class="ml-6 bg-white p-4 rounded-lg shadow-md">
+                        <h4 class="font-bold text-xl text-pink-700">${milestone.year}</h4>
+                        <p class="text-gray-700 mt-1">${milestone.description}</p>
+                    </div>
+                </div>
+            `).join('');
+            renderPagination('history', data);
+        }
+        
+        function renderFacts(data) {
+            const container = document.getElementById('facts-content');
+            if (!data || !data.items) {
+                container.innerHTML = `<p class="text-center col-span-full">No facts found!</p>`;
+                renderPagination('facts', null);
+                return;
+            }
+            container.innerHTML = data.items.map(fact => `
+                 <div class="bg-white p-6 rounded-xl shadow-lg cursor-pointer" onclick="showDetail('facts', ${fact.factId})">
+                    <h4 class="font-bold text-xl text-blue-700 mb-2">${fact.title}</h4>
+                    <p class="text-gray-600">${fact.description}</p>
+                 </div>
+            `).join('');
+            renderPagination('facts', data);
+        }
+
+
+        function renderPagination(viewId, data) {
+            const container = document.getElementById(`${viewId}-pagination`);
+            if (!data || data.totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            let paginationHtml = `<div class="flex justify-center items-center space-x-2">`;
+            // Previous button
+            paginationHtml += `<button ${data.currentPage === 1 ? 'disabled' : ''} onclick="loadContentForView('${viewId}', ${data.currentPage - 1})" class="px-4 py-2 bg-gray-300 rounded disabled:opacity-50">&laquo; Prev</button>`;
+
+            // Page numbers
+            for (let i = 1; i <= data.totalPages; i++) {
+                if(i === data.currentPage) {
+                     paginationHtml += `<span class="px-4 py-2 bg-blue-500 text-white rounded">${i}</span>`;
+                } else if (i === 1 || i === data.totalPages || (i >= data.currentPage - 2 && i <= data.currentPage + 2)) {
+                    paginationHtml += `<button onclick="loadContentForView('${viewId}', ${i})" class="px-4 py-2 bg-gray-300 rounded">${i}</button>`;
+                } else if (i === data.currentPage - 3 || i === data.currentPage + 3) {
+                     paginationHtml += `<span class="px-4 py-2">...</span>`;
+                }
+            }
+
+            // Next button
+            paginationHtml += `<button ${data.currentPage === data.totalPages ? 'disabled' : ''} onclick="loadContentForView('${viewId}', ${data.currentPage + 1})" class="px-4 py-2 bg-gray-300 rounded disabled:opacity-50">Next &raquo;</button>`;
+
+            paginationHtml += `</div>`;
+            container.innerHTML = paginationHtml;
+        }
+
+
+        // --- Filtering and Searching ---
+        
+        function applyBeanFilters() {
+            const filters = {
+                flavorName: document.getElementById('bean-flavor-search').value,
+                colorGroup: document.getElementById('bean-color-search').value,
+                glutenFree: document.getElementById('glutenFree').checked || null,
+                sugarFree: document.getElementById('sugarFree').checked || null,
+                kosher: document.getElementById('kosher').checked || null,
+            };
+            // Remove null/empty filters
+            const activeFilters = Object.fromEntries(Object.entries(filters).filter(([_, v]) => v !== null && v !== ''));
+            loadContentForView('beans', 1, activeFilters);
+        }
+
+        function applyRecipeFilters() {
+            const filters = { name: document.getElementById('recipe-search').value };
+            loadContentForView('recipes', 1, filters);
+        }
+
+        function applyCombinationFilters() {
+            const filters = { name: document.getElementById('combo-search').value };
+            loadContentForView('combinations', 1, filters);
+        }
+        
+        async function performSearch() {
+            const query = document.getElementById('main-search').value;
+            if (!query) return;
+
+            showView('search-results');
+            const container = document.getElementById('search-results-content');
+            container.innerHTML = `<div class="loader"></div>`;
+
+            const beansPromise = fetchData('beans', { flavorName: query, pageSize: 5 });
+            const recipesPromise = fetchData('recipes', { name: query, pageSize: 5 });
+            const combinationsPromise = fetchData('combinations', { name: query, pageSize: 5 });
+
+            const [beans, recipes, combinations] = await Promise.all([beansPromise, recipesPromise, combinationsPromise]);
+            
+            let resultsHtml = '';
+            
+            if (beans && beans.items.length > 0) {
+                resultsHtml += '<h3 class="text-3xl mb-4 text-purple-600">Beans</h3>';
+                resultsHtml += '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">';
+                resultsHtml += beans.items.map(bean => `
+                    <div class="jelly-bean-card bg-white p-4 rounded-xl shadow-md cursor-pointer" onclick="showDetail('beans', ${bean.beanId})">
+                        <img src="${bean.imageUrl}" alt="${bean.flavorName}" class="w-16 h-16 object-contain mx-auto mb-2">
+                        <h4 class="font-bold text-center">${bean.flavorName}</h4>
+                    </div>
+                `).join('');
+                resultsHtml += '</div>';
+            }
+
+            if (recipes && recipes.items.length > 0) {
+                 resultsHtml += '<h3 class="text-3xl mt-8 mb-4 text-green-600">Recipes</h3>';
+                 resultsHtml += '<div class="grid grid-cols-1 md:grid-cols-2 gap-6">';
+                 resultsHtml += recipes.items.map(recipe => `
+                    <div class="jelly-bean-card bg-white p-4 rounded-xl shadow-md cursor-pointer" onclick="showDetail('recipes', ${recipe.recipeId})">
+                        <h4 class="font-bold">${recipe.name}</h4>
+                    </div>
+                 `).join('');
+                 resultsHtml += '</div>';
+            }
+
+            if (combinations && combinations.items.length > 0) {
+                 resultsHtml += '<h3 class="text-3xl mt-8 mb-4 text-yellow-600">Combinations</h3>';
+                 resultsHtml += '<div class="space-y-3">';
+                 resultsHtml += combinations.items.map(combo => `
+                    <div class="jelly-bean-card bg-white p-4 rounded-xl shadow-md cursor-pointer" onclick="showDetail('combinations', ${combo.combinationId})">
+                        <h4 class="font-bold">${combo.name}</h4>
+                    </div>
+                 `).join('');
+                 resultsHtml += '</div>';
+            }
+            
+            if (!resultsHtml) {
+                resultsHtml = `<p class="text-center text-xl text-gray-600">No results found for "${query}". Try a different search!</p>`;
+            }
+
+            container.innerHTML = resultsHtml;
+        }
+
+        // --- Modal & Detail View ---
+        
+        function openModal() { document.getElementById('detailModal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('detailModal').style.display = 'none'; document.getElementById('modal-body').innerHTML = ''; }
+
+        async function showDetail(type, id) {
+            const modalBody = document.getElementById('modal-body');
+            modalBody.innerHTML = '<div class="loader"></div>';
+            openModal();
+            let detailHtml = '';
+            
+            switch(type) {
+                case 'beans':
+                    const bean = await fetchById('beans', id);
+                    if(!bean) return;
+                    detailHtml = `
+                        <div class="flex flex-col md:flex-row gap-8 items-center">
+                            <div class="flex-shrink-0 text-center">
+                                <img src="${bean.imageUrl}" alt="${bean.flavorName}" class="w-48 h-48 object-contain mb-4 mx-auto" onerror="this.onerror=null;this.src='https://placehold.co/200x200/CCCCCC/FFFFFF?text=No+Image';">
+                                 <div class="w-16 h-16 rounded-full mx-auto border-4 border-gray-200" style="background-color: ${bean.backgroundColor};"></div>
+                            </div>
+                            <div>
+                                <h3 class="text-3xl font-bold mb-2" style="color: ${bean.backgroundColor}; text-shadow: 1px 1px 2px #333;">${bean.flavorName}</h3>
+                                <p class="text-lg text-gray-700 mb-4">${bean.description}</p>
+                                <p><strong>Color Group:</strong> ${bean.colorGroup}</p>
+                                <div class="flex flex-wrap gap-2 mt-4">
+                                   ${bean.glutenFree ? '<span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">Gluten-Free</span>' : ''}
+                                   ${bean.sugarFree ? '<span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">Sugar-Free</span>' : ''}
+                                   ${bean.kosher ? '<span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">Kosher</span>' : ''}
+                                   ${bean.seasonal ? '<span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm">Seasonal</span>' : ''}
+                                </div>
+                                 <p class="mt-4"><strong>Ingredients:</strong> ${bean.ingredients.join(', ')}</p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'recipes':
+                    const recipe = await fetchById('recipes', id);
+                     if(!recipe) return;
+                     detailHtml = `
+                        <img src="${recipe.imageUrl}" alt="${recipe.name}" class="w-full h-64 object-cover rounded-lg mb-4" onerror="this.onerror=null;this.src='https://placehold.co/500x300/CCCCCC/FFFFFF?text=No+Image';">
+                        <h3 class="text-3xl font-bold text-green-700 mb-2">${recipe.name}</h3>
+                        <p class="text-lg text-gray-700 mb-4">${recipe.description}</p>
+                        <p><strong>Makes:</strong> ${recipe.makingAmount}</p>
+                        <h4 class="text-xl font-semibold mt-4 mb-2">Ingredients:</h4>
+                        <ul class="list-disc list-inside">
+                           ${recipe.ingredients.map(ing => `<li>${ing}</li>`).join('')}
+                        </ul>
+                        <h4 class="text-xl font-semibold mt-4 mb-2">Directions:</h4>
+                        <ol class="list-decimal list-inside space-y-2">
+                           ${recipe.directions.map(dir => `<li>${dir}</li>`).join('')}
+                        </ol>
+                     `;
+                    break;
+                case 'combinations':
+                     const combo = await fetchById('combinations', id);
+                     if(!combo) return;
+                     detailHtml = `
+                        <h3 class="text-3xl font-bold text-yellow-800 mb-4 text-center">${combo.name}</h3>
+                        <p class="text-center text-lg mb-6">Combine the following flavors to create this taste sensation!</p>
+                        <div class="flex justify-center flex-wrap gap-4">
+                           ${combo.tag.map(tag => `<div class="bg-gray-200 text-gray-800 font-semibold px-4 py-2 rounded-full text-lg">${tag}</div>`).join('')}
+                        </div>
+                     `;
+                    break;
+                case 'facts':
+                    const fact = await fetchById('facts', id);
+                    if (!fact) return;
+                    detailHtml = `
+                        <h3 class="text-3xl font-bold text-blue-700 mb-4">${fact.title}</h3>
+                        <p class="text-lg text-gray-700">${fact.description}</p>
+                    `;
+                    break;
+            }
+            modalBody.innerHTML = detailHtml;
+        }
+
+        async function showRandomDetail(type) {
+            // Fetch the first page to get total count
+            const data = await fetchData(type, { pageIndex: 1, pageSize: 1 });
+            if (data && data.totalCount > 0) {
+                const randomId = Math.floor(Math.random() * data.totalCount) + 1;
+                // The API seems to not be 1-indexed for some endpoints, let's get a random item from a page
+                const randomPage = Math.floor(Math.random() * data.totalPages) + 1;
+                const pageData = await fetchData(type, { pageIndex: randomPage, pageSize: 1 });
+                if(pageData && pageData.items.length > 0) {
+                   const item = pageData.items[0];
+                   const idKey = Object.keys(item)[0]; // e.g., beanId, recipeId
+                   showDetail(type, item[idKey]);
+                }
+            } else {
+                alert(`Could not find a random ${type}.`);
+            }
+        }
+
+        // --- Initial Load ---
+        window.onload = () => {
+            showView('home');
+            loadContentForView('beans');
+        };
+        
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById('detailModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+    </script>
+</body>
+</html>
